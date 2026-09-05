@@ -1,0 +1,86 @@
+export const translations = {
+  fr: {
+    landing: {
+      heroTitle: "L'IA qui automatise votre croissance.",
+      heroSub:
+        "YEFAITOU analyse vos cibles, conçoit vos stratégies et publie vos contenus automatiquement. Le marketing, sans le stress.",
+      ctaMain: "Lancer mon Robot 🚀",
+      ctaSecondary: "Découvrir le flux",
+      featureTitle: "Une machine de guerre marketing",
+      featureSub: "Trois étapes, un seul résultat : la croissance.",
+    },
+    nav: {
+      dashboard: "Dashboard",
+      studio: "Studio de Campagne",
+      wallet: "Portefeuille",
+      settings: "Connexions",
+      logout: "Déconnexion",
+    },
+    dashboard: {
+      title: "Tableau de Bord",
+      sub: "Bienvenue dans votre centre de commandement IA.",
+      balance: "Solde Actuel",
+      activeCampaigns: "Campagnes Actives",
+      quickAction: "Prêt pour une nouvelle victoire ?",
+      quickActionBtn: "Lancer le Studio",
+    },
+    wallet: {
+      title: "Portefeuille",
+      sub: "Gérez vos ressources d'intelligence artificielle.",
+      recharge: "+ Recharger Crédits",
+      history: "Historique des Flux",
+    },
+    studio: {
+      title: "Studio de Campagne",
+      sub: "L'IA conçoit, le Robot exécute.",
+      goalLabel: "Objectif de la mission",
+      targetLabel: "Cible Prioritaire",
+      generateBtn: "Déployer la Stratégie 🚀",
+      robotBtn: "Lancer le Robot 🤖",
+      reviewTitle: "Vérification Finale",
+      publishBtn: "Approuver et Publier Tout 🚀",
+    },
+  },
+  en: {
+    landing: {
+      heroTitle: "The AI that automates your growth.",
+      heroSub:
+        "YEFAITOU analyzes your targets, designs your strategies and publishes your content automatically. Marketing, without the stress.",
+      ctaMain: "Launch my Robot 🚀",
+      ctaSecondary: "Discover the flow",
+      featureTitle: "A marketing war machine",
+      featureSub: "Three steps, one result: growth.",
+    },
+    nav: {
+      dashboard: "Dashboard",
+      studio: "Campaign Studio",
+      wallet: "Wallet",
+      settings: "Connections",
+      logout: "Logout",
+    },
+    dashboard: {
+      title: "Dashboard",
+      sub: "Welcome to your AI command center.",
+      balance: "Current Balance",
+      activeCampaigns: "Active Campaigns",
+      quickAction: "Ready for a new victory?",
+      quickActionBtn: "Launch Studio",
+    },
+    wallet: {
+      title: "Wallet",
+      sub: "Manage your AI resources.",
+      recharge: "+ Recharge Credits",
+      history: "Transaction History",
+    },
+    studio: {
+      title: "Campaign Studio",
+      sub: "AI designs, Robot executes.",
+      goalLabel: "Mission Objective",
+      targetLabel: "Priority Target",
+      generateBtn: "Deploy Strategy 🚀",
+      robotBtn: "Launch Robot 🤖",
+      reviewTitle: "Final Review",
+      publishBtn: "Approve and Publish All 🚀",
+    },
+  },
+};
