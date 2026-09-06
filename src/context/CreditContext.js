@@ -11,7 +11,10 @@ export const CreditProvider = ({ children }) => {
   const loadCredits = async () => {
     setLoading(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         setBalance(0);
         setTransactions([]);
@@ -35,6 +38,7 @@ export const CreditProvider = ({ children }) => {
         .limit(100);
 
       if (txError) throw txError;
+
       setTransactions(
         (txs || []).map((tx) => ({
           id: tx.id,
@@ -55,26 +59,59 @@ export const CreditProvider = ({ children }) => {
   useEffect(() => {
     loadCredits();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
       loadCredits();
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Les crédits ne peuvent plus être ajoutés/modifiés directement depuis le navigateur.
-  // Les achats et consommations devront passer par des fonctions serveur/RPC sécurisées.
-  const addCredits = async () => {
-    throw new Error("Les crédits doivent être ajoutés après confirmation serveur du paiement.");
+  // Toutes les consommations passent par la fonction PostgreSQL SECURITY DEFINER.
+  // Le navigateur ne peut donc pas modifier directement le solde.
+  const spendCredits = async (amount, description, referenceId = null) => {
+    const parsedAmount = Number(amount);
+
+    if (!Number.isInteger(parsedAmount) || parsedAmount <= 0) {
+      throw new Error("Montant de crédits invalide.");
+    }
+
+    const { data, error } = await supabase.rpc("spend_credits", {
+      p_amount: parsedAmount,
+      p_description: description,
+      p_reference_id: referenceId,
+    });
+
+    if (error) {
+      if (error.message?.includes("INSUFFICIENT_CREDITS")) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+      throw error;
+    }
+
+    const newBalance = Number(data?.balance ?? 0);
+    setBalance(newBalance);
+    await loadCredits();
+    return newBalance;
   };
 
-  const spendCredits = async () => {
-    throw new Error("La consommation de crédits doit être validée côté serveur.");
+  // Deliberately unavailable to the browser. Credits are granted only by trusted
+  // payment/webhook infrastructure through the service-role path.
+  const addCredits = async () => {
+    throw new Error("Les crédits sont ajoutés uniquement après confirmation serveur du paiement.");
   };
 
   return (
     <CreditContext.Provider
-      value={{ balance, transactions, loading, refreshCredits: loadCredits, addCredits, spendCredits }}
+      value={{
+        balance,
+        transactions,
+        loading,
+        refreshCredits: loadCredits,
+        addCredits,
+        spendCredits,
+      }}
     >
       {children}
     </CreditContext.Provider>
