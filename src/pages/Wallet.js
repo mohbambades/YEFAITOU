@@ -1,245 +1,120 @@
 import React, { useState } from "react";
 import { useCredits } from "../context/CreditContext";
 import { useLanguage } from "../context/LanguageContext";
-import {
-  Wallet as WalletIcon,
-  ArrowDownCircle,
-  ArrowUpCircle,
-} from "lucide-react";
+import { Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle, X } from "lucide-react";
 
 const PRICING_PLANS = [
-  {
-    id: "starter",
-    name: "Starter",
-    credits: 5000,
-    price: "5 000",
-    currency: "FCFA",
-    color: "from-blue-500 to-cyan-400",
-  },
-  {
-    id: "growth",
-    name: "Growth",
-    credits: 20000,
-    price: "15 000",
-    currency: "FCFA",
-    color: "from-emerald-500 to-teal-400",
-  },
-  {
-    id: "scale",
-    name: "Scale",
-    credits: 60000,
-    price: "40 000",
-    currency: "FCFA",
-    color: "from-indigo-600 to-purple-500",
-  },
+  { id: "starter", name: "Starter", credits: 5000, price: "5 000", currency: "FCFA", color: "from-blue-500 to-cyan-400" },
+  { id: "growth", name: "Growth", credits: 20000, price: "15 000", currency: "FCFA", color: "from-emerald-500 to-teal-400" },
+  { id: "scale", name: "Scale", credits: 60000, price: "40 000", currency: "FCFA", color: "from-indigo-600 to-purple-500" },
 ];
 
 const Wallet = () => {
-  const { balance, transactions, addCredits } = useCredits();
+  const { balance, transactions, loading } = useCredits();
   const { t } = useLanguage();
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [paymentStatus, setPaymentStatus] = useState("idle");
-
-  const handleSelectPlan = (plan) => {
-    setSelectedPlan(plan);
-    setIsPaymentModalOpen(true);
-  };
-
-  const simulatePayment = () => {
-    setPaymentStatus("processing");
-    setTimeout(() => {
-      addCredits(selectedPlan.credits);
-      setPaymentStatus("success");
-      setTimeout(() => {
-        setIsPaymentModalOpen(false);
-        setPaymentStatus("idle");
-        setSelectedPlan(null);
-      }, 3000);
-    }, 2000);
-  };
 
   return (
-    <div className="p-8 animate-in fade-in duration-700">
-      <header className="mb-12">
-        <h1 className="text-4xl font-black text- dark:text-white tracking-tight mb-2">
-          {t("wallet.title")}
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 font-light">
-          {t("wallet.sub")}
-        </p>
+    <div className="min-h-full p-4 md:p-8 animate-in fade-in duration-500">
+      <header className="mb-8 md:mb-12">
+        <div className="breadcrumbs text-sm mb-3"><ul><li>YEFAITOU</li><li>Wallet</li></ul></div>
+        <h1 className="text-3xl md:text-4xl font-black tracking-tight">{t("wallet.title")}</h1>
+        <p className="text-base-content/60 mt-2">{t("wallet.sub")}</p>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-1">
-          <div className="bg- dark:bg-slate-900 p-8 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-xl relative overflow-hidden group transition-colors duration-300">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all"></div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-xs uppercase tracking-widest font-bold mb-4">
-                <WalletIcon size={14} /> Solde Disponible
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 md:gap-8">
+        <div className="xl:col-span-1">
+          <div className="card bg-base-100 shadow-xl border border-base-300 overflow-hidden">
+            <div className="card-body relative">
+              <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-success/10 blur-2xl" />
+              <div className="flex items-center gap-2 text-base-content/60 text-xs uppercase tracking-widest font-bold">
+                <WalletIcon size={15} /> Solde disponible
               </div>
-              <h2 className="text-6xl font-black text- dark:text-white mb-8 tracking-tighter">
-                {balance}
-              </h2>
-              <button
-                onClick={() =>
-                  document
-                    .getElementById("pricing")
-                    ?.scrollIntoView({ behavior: "smooth" })
-                }
-                className="w-full py-4 bg-emerald-500 text-slate-950 font-bold rounded-2xl hover:bg-emerald-400 transition-all transform hover:scale-105"
-              >
-                {t("wallet.recharge")}
+              <div className="text-5xl md:text-6xl font-black tracking-tighter my-4">
+                {loading ? <span className="loading loading-dots loading-md" /> : balance.toLocaleString("fr-FR")}
+              </div>
+              <div className="badge badge-success badge-outline mb-5">Crédits YEFAITOU</div>
+              <button className="btn btn-success btn-lg w-full" onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}>
+                Recharger mon compte
               </button>
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-2 space-y-12">
+        <div className="xl:col-span-2 space-y-8">
           <section id="pricing">
-            <h3 className="text-xl font-bold text- dark:text-white mb-6 flex items-center gap-2">
-              <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>{" "}
-              Packs de Crédits
-            </h3>
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <h2 className="text-xl font-black">Packs de crédits</h2>
+                <p className="text-sm text-base-content/60 mt-1">Choisissez le volume adapté à vos campagnes.</p>
+              </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {PRICING_PLANS.map((plan) => (
-                <div
-                  key={plan.id}
-                  className="p-6 bg- dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-3xl hover:border-emerald-500 transition-all cursor-pointer group backdrop-blur-md shadow-sm dark:shadow-none"
-                  onClick={() => handleSelectPlan(plan)}
-                >
-                  <div
-                    className={`w-10 h-10 rounded-xl bg-gradient-to-br ${plan.color} mb-4 shadow-lg`}
-                  ></div>
-                  <h4 className="text- dark:text-white font-bold text-lg mb-1">
-                    {plan.name}
-                  </h4>
-                  <p className="text-2xl font-black text-slate- dark:text-white mb-4">
-                    {plan.credits}
-                  </p>
-                  <p className="text-slate-400 dark:text-slate-400 text-sm mb-6">
-                    {plan.price} {plan.currency}
-                  </p>
-                  <button className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 group-hover:bg-emerald-500 group-hover:text-slate-950 font-bold transition-all text-sm">
-                    Choisir
-                  </button>
+                <div key={plan.id} className="card bg-base-100 border border-base-300 hover:border-success shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer" onClick={() => setSelectedPlan(plan)}>
+                  <div className="card-body p-5">
+                    <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.color} shadow-lg`} />
+                    <h3 className="card-title mt-2">{plan.name}</h3>
+                    <div className="text-2xl font-black">{plan.credits.toLocaleString("fr-FR")}</div>
+                    <p className="text-sm text-base-content/60">crédits</p>
+                    <div className="divider my-1" />
+                    <p className="font-black text-lg">{plan.price} {plan.currency}</p>
+                    <button className="btn btn-outline btn-success btn-sm mt-2">Choisir</button>
+                  </div>
                 </div>
               ))}
             </div>
           </section>
 
-          <div className="bg- dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 rounded-[2rem] overflow-hidden shadow-sm dark:shadow-none backdrop-blur-md">
-            <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-slate dark:bg-slate-900/60">
-              <h3 className="font-bold text- dark:text-white">
-                {t("wallet.history")}
-              </h3>
-            </div>
-            <div className="divide-y divide-slate-500 dark:divide-slate-800">
-              {transactions &&
-                transactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className="p-4 flex justify-between items-center hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-sm ${
-                          tx.amount > 0
-                            ? "bg-emerald-100 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400"
-                            : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
-                        }`}
-                      >
-                        {tx.amount > 0 ? (
-                          <ArrowDownCircle size={18} />
-                        ) : (
-                          <ArrowUpCircle size={18} />
-                        )}
+          <section className="card bg-base-100 border border-base-300 shadow-sm">
+            <div className="card-body p-0">
+              <div className="p-5 border-b border-base-300">
+                <h2 className="font-black">{t("wallet.history")}</h2>
+              </div>
+              {loading ? (
+                <div className="flex justify-center py-12"><span className="loading loading-spinner loading-lg text-success" /></div>
+              ) : transactions.length === 0 ? (
+                <div className="alert m-5">Aucune transaction pour le moment.</div>
+              ) : (
+                <div className="divide-y divide-base-300">
+                  {transactions.map((tx) => (
+                    <div key={tx.id} className="p-4 flex justify-between items-center gap-4 hover:bg-base-200/50 transition-colors">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`avatar placeholder ${tx.amount > 0 ? "text-success" : "text-base-content/50"}`}>
+                          <div className="w-10 rounded-full bg-base-200">
+                            {tx.amount > 0 ? <ArrowDownCircle size={18} /> : <ArrowUpCircle size={18} />}
+                          </div>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-bold truncate">{tx.description}</p>
+                          <p className="text-xs text-base-content/50">{tx.date}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-200">
-                          {tx.description}
-                        </p>
-                        <p className="text-[10px] text-slate-400">{tx.date}</p>
-                      </div>
+                      <span className={`font-black whitespace-nowrap ${tx.amount > 0 ? "text-success" : "text-base-content/60"}`}>
+                        {tx.amount > 0 ? `+${tx.amount.toLocaleString("fr-FR")}` : tx.amount.toLocaleString("fr-FR")}
+                      </span>
                     </div>
-                    <div
-                      className={`font-black ${
-                        tx.amount > 0
-                          ? "text-emerald-600 dark:text-emerald-400"
-                          : "text-slate-400 dark:text-slate-400"
-                      }`}
-                    >
-                      {tx.amount > 0 ? `+${tx.amount}` : tx.amount}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
+          </section>
         </div>
       </div>
 
-      {isPaymentModalOpen && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xl z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
-            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                Confirmation
-              </h3>
-              <button
-                onClick={() => setIsPaymentModalOpen(false)}
-                className="text-slate-400 hover:text-slate-600 dark:hover:text-white text-2xl"
-              >
-                &times;
-              </button>
-            </div>
-            <div className="p-10 text-center">
-              {paymentStatus === "idle" && (
-                <>
-                  <div className="text-5xl mb-6">💎</div>
-                  <h4 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
-                    {selectedPlan?.credits} Crédits
-                  </h4>
-                  <p className="text-emerald-600 dark:text-emerald-400 font-bold text-xl mb-8">
-                    {selectedPlan?.price} {selectedPlan?.currency}
-                  </p>
-                  <div className="grid grid-cols-2 gap-4">
-                    <button
-                      onClick={simulatePayment}
-                      className="p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-bold transition-all hover:border-emerald-500"
-                    >
-                      Mobile Money
-                    </button>
-                    <button
-                      onClick={simulatePayment}
-                      className="p-4 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white font-bold transition-all hover:border-emerald-500"
-                    >
-                      Carte Visa
-                    </button>
-                  </div>
-                </>
-              )}
-              {paymentStatus === "processing" && (
-                <div className="py-10">
-                  <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-6"></div>
-                  <p className="text-slate-500 dark:text-slate-400 font-medium">
-                    Traitement sécurisé...
-                  </p>
-                </div>
-              )}
-              {paymentStatus === "success" && (
-                <div className="py-10 animate-in zoom-in">
-                  <div className="text-6xl mb-4">🎉</div>
-                  <h4 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
-                    Paiement Réussi !
-                  </h4>
-                  <p className="text-slate-500 dark:text-slate-400">
-                    Vos crédits sont disponibles.
-                  </p>
-                </div>
-              )}
+      {selectedPlan && (
+        <dialog open className="modal modal-open">
+          <div className="modal-box max-w-md">
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onClick={() => setSelectedPlan(null)}><X size={16} /></button>
+            <h3 className="font-black text-2xl">{selectedPlan.name}</h3>
+            <p className="py-4 text-base-content/60">Vous avez sélectionné {selectedPlan.credits.toLocaleString("fr-FR")} crédits pour {selectedPlan.price} {selectedPlan.currency}.</p>
+            <div className="alert alert-info text-sm">Le paiement réel sera activé dans le prochain lot. Aucun crédit ne sera ajouté avant confirmation serveur du paiement.</div>
+            <div className="modal-action">
+              <button className="btn" onClick={() => setSelectedPlan(null)}>Fermer</button>
             </div>
           </div>
-        </div>
+          <div className="modal-backdrop" onClick={() => setSelectedPlan(null)} />
+        </dialog>
       )}
     </div>
   );
