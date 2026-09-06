@@ -5,6 +5,9 @@ import StrategyView from "../components/StrategyView";
 import { useCredits } from "../context/CreditContext";
 import { Target, Cpu, Send, RotateCcw, CheckCircle } from "lucide-react";
 
+const PUBLISH_FUNCTION_URL =
+  "https://wovzjfmqjgnfudnvmxgt.supabase.co/functions/v1/publish-to-social";
+
 const CampaignStudio = () => {
   const { spendCredits } = useCredits();
   const { t } = useLanguage();
@@ -41,39 +44,34 @@ const CampaignStudio = () => {
     }
   };
 
-  // --- LA FONCTION DE PUBLICATION RÉELLE ---
+  // Les identifiants et tokens sociaux ne doivent jamais être exposés dans le navigateur.
+  // La Supabase Edge Function récupère la connexion sociale sécurisée côté serveur.
   const handleFinalPublish = async () => {
     try {
-      // On boucle sur les actifs pour publier sur chaque plateforme
-      for (const [platform, data] of Object.entries(assets)) {
-        if (platform === "instagram") {
-          const response = await fetch(
-            "https://wovzjfmqjgnfudnvmxgt.supabase.co/functions/v1/publish-to-social",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                imageUrl: data.image,
-                caption: data.caption,
-                platform: "instagram",
-                accessToken:
-                  "EAAPJHTHzvaMBSUhHoTp2uXLvHIuKuvNvEWwUQ38UcdBjTojYp5CNvOxU4G3MJpKDv3GFjGNl4RghzfxQjbLZAnRtac8Oo02l6cdq2TkMCXAAXC8KSZATg3u1ZB7yZBSXkxq7TmnVZAwtrmtqN2uEEZAchVq0kNZCE8V1tGZAldNCUR8KdC4XNjtZATMTAr5N2kt9RN59ZAcywuDAmOuzbVRmGlQ0gZAkjeONcMDWgexxaSwGZCIOZBspv39xDH8FTTESd76znTZC27C6xM3yoFWAANxVicLwN1WXocHPGgt5q2ZAqwZD", // <--- METTEZ VOTRE TOKEN ICI
-                pageId: "1099249973042369", // <--- METTEZ VOTRE ID ICI
-              }),
-            }
-          );
+      for (const [platform, data] of Object.entries(assets || {})) {
+        const response = await fetch(PUBLISH_FUNCTION_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: data.image,
+            caption: data.caption,
+            platform,
+          }),
+        });
 
-          if (!response.ok) {
+        if (!response.ok) {
+          let errorMessage = `Erreur lors de la publication sur ${platform}`;
+          try {
             const errorData = await response.json();
-            throw new Error(
-              errorData.error || `Erreur lors de la publication sur ${platform}`
-            );
+            errorMessage = errorData.error || errorMessage;
+          } catch (_) {
+            // Keep the generic error when the function does not return JSON.
           }
+          throw new Error(errorMessage);
         }
       }
-      alert(
-        "🚀 Félicitations ! Votre campagne a été publiée avec succès sur Instagram !"
-      );
+
+      alert("🚀 Félicitations ! Votre campagne a été publiée avec succès !");
       setExecutionStep("setup");
       setStrategy(null);
       setAssets(null);
@@ -162,7 +160,7 @@ const CampaignStudio = () => {
         <div className="flex flex-col items-center justify-center py-20 text-center space-y-6 animate-in zoom-in">
           <div className="relative">
             <div className="w-24 h-24 bg-emerald-500/20 rounded-full animate-ping absolute inset-0"></div>
-            <div className="relative w-24 h-24 bg-white dark:bg-slate-900 border border-emerald-500 rounded-full flex items-//center justify-center">
+            <div className="relative w-24 h-24 bg-white dark:bg-slate-900 border border-emerald-500 rounded-full flex items-center justify-center">
               <Cpu size={40} className="text-emerald-500 animate-pulse" />
             </div>
           </div>
@@ -206,7 +204,7 @@ const CampaignStudio = () => {
                 </div>
                 <div className="p-8">
                   <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6 italic">
-                    "{data.caption}"
+                    &quot;{data.caption}&quot;
                   </p>
                   <button className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm">
                     Modifier le texte
