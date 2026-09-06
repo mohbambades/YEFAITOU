@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { useCredits } from "../context/CreditContext";
 import { useLanguage } from "../context/LanguageContext";
-import { Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle, X } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
+import { Wallet as WalletIcon, ArrowDownCircle, ArrowUpCircle, X, Loader2 } from "lucide-react";
 
 const PRICING_PLANS = [
   { id: "starter", name: "Starter", credits: 5000, price: "5 000", currency: "FCFA", color: "from-blue-500 to-cyan-400" },
@@ -10,9 +11,37 @@ const PRICING_PLANS = [
 ];
 
 const Wallet = () => {
-  const { balance, transactions, loading } = useCredits();
+  const { balance, transactions, loading, refreshCredits } = useCredits();
   const { t } = useLanguage();
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [paying, setPaying] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+
+  const startPayment = async () => {
+    if (!selectedPlan || paying) return;
+    setPaying(true);
+    setPaymentError("");
+
+    try {
+      const { data, error } = await supabase.functions.invoke("initialize-payment", {
+        body: { planId: selectedPlan.id },
+      });
+
+      if (error) throw error;
+      if (!data?.authorization_url) throw new Error("URL de paiement indisponible.");
+
+      window.location.assign(data.authorization_url);
+    } catch (error) {
+      console.error("Erreur initialisation paiement:", error);
+      setPaymentError("Impossible d'initialiser le paiement. Vérifiez votre connexion et réessayez.");
+      setPaying(false);
+    }
+  };
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "return") refreshCredits();
+  }, [refreshCredits]);
 
   return (
     <div className="min-h-full p-4 md:p-8 animate-in fade-in duration-500">
@@ -51,7 +80,7 @@ const Wallet = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {PRICING_PLANS.map((plan) => (
-                <div key={plan.id} className="card bg-base-100 border border-base-300 hover:border-success shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer" onClick={() => setSelectedPlan(plan)}>
+                <div key={plan.id} className="card bg-base-100 border border-base-300 hover:border-success shadow-sm hover:shadow-xl transition-all duration-200 cursor-pointer" onClick={() => { setSelectedPlan(plan); setPaymentError(""); }}>
                   <div className="card-body p-5">
                     <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${plan.color} shadow-lg`} />
                     <h3 className="card-title mt-2">{plan.name}</h3>
@@ -105,15 +134,19 @@ const Wallet = () => {
       {selectedPlan && (
         <dialog open className="modal modal-open">
           <div className="modal-box max-w-md">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onClick={() => setSelectedPlan(null)}><X size={16} /></button>
+            <button className="btn btn-sm btn-circle btn-ghost absolute right-3 top-3" onClick={() => setSelectedPlan(null)} disabled={paying}><X size={16} /></button>
             <h3 className="font-black text-2xl">{selectedPlan.name}</h3>
             <p className="py-4 text-base-content/60">Vous avez sélectionné {selectedPlan.credits.toLocaleString("fr-FR")} crédits pour {selectedPlan.price} {selectedPlan.currency}.</p>
-            <div className="alert alert-info text-sm">Le paiement réel sera activé dans le prochain lot. Aucun crédit ne sera ajouté avant confirmation serveur du paiement.</div>
+            <div className="alert alert-info text-sm">Paiement sécurisé par Paystack. Vous pouvez payer par carte Visa/Mastercard ou mobile money selon les options disponibles.</div>
+            {paymentError && <div className="alert alert-error text-sm mt-3">{paymentError}</div>}
             <div className="modal-action">
-              <button className="btn" onClick={() => setSelectedPlan(null)}>Fermer</button>
+              <button className="btn" onClick={() => setSelectedPlan(null)} disabled={paying}>Fermer</button>
+              <button className="btn btn-success" onClick={startPayment} disabled={paying}>
+                {paying ? <><Loader2 size={16} className="animate-spin" /> Redirection…</> : "Payer maintenant"}
+              </button>
             </div>
           </div>
-          <div className="modal-backdrop" onClick={() => setSelectedPlan(null)} />
+          <div className="modal-backdrop" onClick={() => !paying && setSelectedPlan(null)} />
         </dialog>
       )}
     </div>
