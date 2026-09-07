@@ -5,16 +5,13 @@ const Signup = ({ onSignupSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
 
-    // Appel à Supabase pour créer un nouvel utilisateur
-    const { error } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-    });
+    const { error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
       alert("Erreur d'inscription : " + error.message);
@@ -25,22 +22,48 @@ const Signup = ({ onSignupSuccess }) => {
     setLoading(false);
   };
 
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+
+    if (error) {
+      alert("Erreur d'inscription avec Google : " + error.message);
+      setGoogleLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-100">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-slate-200">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-emerald-500 mb-2">
-            YEFAITOU
-          </h1>
-          <p className="text-slate-500">
-            Créez votre compte pour propulser votre business
-          </p>
+          <h1 className="text-3xl font-black text-emerald-500 mb-2">YEFAITOU</h1>
+          <p className="text-slate-500">Créez votre compte pour propulser votre business</p>
         </div>
+
+        <button
+          type="button"
+          onClick={handleGoogleSignup}
+          disabled={googleLoading || loading}
+          className="w-full flex items-center justify-center gap-3 border border-slate-300 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition-all disabled:bg-slate-100 mb-5"
+        >
+          <span className="text-lg font-black">G</span>
+          {googleLoading ? "Création avec Google..." : "Continuer avec Google"}
+        </button>
+
+        <div className="flex items-center gap-3 mb-5">
+          <div className="h-px bg-slate-200 flex-1" />
+          <span className="text-xs text-slate-400 font-medium">OU</span>
+          <div className="h-px bg-slate-200 flex-1" />
+        </div>
+
         <form onSubmit={handleSignup} className="space-y-4">
           <div className="text-left">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Email
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
             <input
               type="email"
               className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
@@ -50,9 +73,7 @@ const Signup = ({ onSignupSuccess }) => {
             />
           </div>
           <div className="text-left">
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Mot de passe
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">Mot de passe</label>
             <input
               type="password"
               className="w-full p-3 rounded-xl border border-slate-300 outline-none focus:ring-2 focus:ring-indigo-500"
@@ -63,22 +84,16 @@ const Signup = ({ onSignupSuccess }) => {
           </div>
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || googleLoading}
             className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all disabled:bg-slate-400"
           >
             {loading ? "Création du compte..." : "S'inscrire"}
           </button>
         </form>
+
         <p className="text-center mt-6 text-sm text-slate-500">
           Déjà un compte ?{" "}
-          <a
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = "/login";
-            }}
-            className="text-indigo-600 font-bold"
-          >
+          <a href="#" onClick={(e) => { e.preventDefault(); window.location.href = "/login"; }} className="text-indigo-600 font-bold">
             Se connecter
           </a>
         </p>
