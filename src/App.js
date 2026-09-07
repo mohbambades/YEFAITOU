@@ -44,6 +44,7 @@ const Sidebar = ({ theme, setTheme, isCollapsed, setIsCollapsed, currentPage, se
 const App = () => {
   const path = window.location.pathname;
   const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [authPage, setAuthPage] = useState(path === "/signup" ? "signup" : "login");
   const [showLanding, setShowLanding] = useState(!["/login", "/signup"].includes(path));
@@ -57,16 +58,31 @@ const App = () => {
 
   useEffect(() => {
     let mounted = true;
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!mounted) return;
-      setSession(session);
-      if (session) setShowLanding(false);
-    });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
-      if (nextSession) setShowLanding(false);
+      if (nextSession) {
+        setShowLanding(false);
+        setAuthLoading(false);
+        if (window.location.pathname !== "/") {
+          window.history.replaceState({}, document.title, "/");
+        }
+      } else if (event === "INITIAL_SESSION" || event === "SIGNED_OUT") {
+        setAuthLoading(false);
+      }
+    });
+
+    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
+      if (!mounted) return;
+      setSession(currentSession);
+      setAuthLoading(false);
+      if (currentSession) {
+        setShowLanding(false);
+        if (window.location.pathname !== "/") {
+          window.history.replaceState({}, document.title, "/");
+        }
+      }
     });
 
     return () => {
@@ -80,6 +96,17 @@ const App = () => {
     setSession(null);
     setShowLanding(true);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-slate-300">
+        <div className="text-center">
+          <div className="w-10 h-10 mx-auto mb-4 rounded-xl bg-emerald-500 flex items-center justify-center text-slate-950 font-black text-xl">Y</div>
+          <p className="text-sm">Vérification de la session...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (showLanding && !session) return <LandingPage onGetStarted={() => setShowLanding(false)} />;
   if (!session) return authPage === "login" ? <Login onLoginSuccess={(nextSession) => setSession(nextSession || true)} /> : <Signup onSignupSuccess={() => setAuthPage("login")} />;
