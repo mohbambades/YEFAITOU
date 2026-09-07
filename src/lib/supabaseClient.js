@@ -7,4 +7,11 @@ if (!supabaseUrl || !supabaseKey) {
   throw new Error("Variables Supabase manquantes: REACT_APP_SUPABASE_URL et REACT_APP_SUPABASE_ANON_KEY.");
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+  },
+});
